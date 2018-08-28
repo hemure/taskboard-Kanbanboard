@@ -1,5 +1,6 @@
 # taskboard
 Configurable Kanban board with react-beautiful-dnd.
+Looks perfect in Chrome. In Firefox an Edge there are problems and Safari I have not tested.
 
 # Features:
 - The board layout is defined in a JSON config object.
@@ -8,6 +9,7 @@ Configurable Kanban board with react-beautiful-dnd.
 - Simple (inspired by Redux) state management and mocked data model.
 
 # Should:
+- The board layout css must work in all major browsers.
 - WIP configuration and display.
 - Implement (context sensitive) cards in both board and detail view.
 - Include extendible 'New card' form.
