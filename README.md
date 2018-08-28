@@ -22,7 +22,7 @@
 
 
 # Demo on CodeSandbox
-https://codesandbox.io/s/9881ljwyl4?hidenavigation=1&module=%2Fpublic%2Findex.html&view=preview
+https://vy6jon9qry.codesandbox.io/
 
 
 ### Please let me know if you use this code for your own board implementation.
