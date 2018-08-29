@@ -9,12 +9,12 @@ const boardLayout = {
         },
         {
             id: 's2',
-            title: 'New Portal site',
+            title: 'Project 1',
             height: '200px',
         },
         {
             id: 's3',
-            title: 'SOP',
+            title: 'Project 2',
             height: '200px',
         },
     ],
