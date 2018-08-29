@@ -1,6 +1,9 @@
 # taskboard
 ### Configurable Kanban board with react-beautiful-dnd.
-### Looks perfect in Chrome. In Firefox an Edge there are problems and it has not been tested in Safari.
+
+
+A complex board with Swimlanes and nested columns:
+![image](https://user-images.githubusercontent.com/2856350/44791251-7ec93500-aba1-11e8-9b46-824ce6ad3c94.png)
 
 # Features:
 - The board layout is defined in a JSON config object.
@@ -8,21 +11,27 @@
 - Supports conditoinal drop, based on a property in the config object.
 - Simple (inspired by Redux) state management and mocked data model.
 
-# Should:
-- The board layout css must work in all major browsers.
+# Features to come:
+## Should:
 - WIP configuration and display.
 - Implement (context sensitive) cards in both board and detail view.
 - Include extendible 'New card' form.
 - Proper data management including data API communication.
 
-# Could
+## Could
 - Trello-like cards.
 - Tags, ownership etc. and filters on them.
 - ???
 
+# Documentation
+The configuration file is a JSON object and lives in src/boardlayout.js
+- Swimlanes array (heigth not yet implemented)
+- Columns object supproting a nested structure for columns groups.
+-- allowedDragToColumns is an array of column ids that tasks in this column can be dragged to.
+-- ColumnOrder is an array of column ids and specifies the order in witch the columns will be rendered.
 
-# Demo on CodeSandbox
-https://vy6jon9qry.codesandbox.io/
+
+
 
 
 ### Please let me know if you use this code for your own board implementation.
