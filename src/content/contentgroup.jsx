@@ -33,7 +33,7 @@ export default class ContentGroup extends React.Component {
                                 column={column} 
                                 tasks={tasks}
                                 index={index} 
-                                type={this.props.laneId}
+                                /*type={this.props.laneId}*/
                                 isDropDisabled={isDropDisabled}
                                 />;
                 })}

@@ -8,9 +8,6 @@ const Container = styled.div`
     padding: 6px;
     margin-bottom: 6px;
     background-color: ${props => (props.isDragging ? 'lightgreen' : 'white')};
-    /*width:100px;
-    flex-grow:1;
-    flex-basis: 140px;*/
 `
 
 export default class Task extends React.Component {
@@ -32,5 +29,4 @@ export default class Task extends React.Component {
             </Draggable>
         );
     }
-
 }

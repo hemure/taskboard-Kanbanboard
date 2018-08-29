@@ -20,12 +20,16 @@ const Board = styled.div`
     background-color: lightblue;
     /*height: 300px;*/
     flex: 1;
+    @supports (-ms-ime-align:auto){
+        display: -ms-flexbox;
+        -ms-flex-direction: column;
+        -ms-flex: 1;
+    }
 `;
 
 const BoardTitle = styled.h1`
     display: flex;
     justify-content: center;
-    /*text-align: center;*/
     margin-top:0px;
     margin-bottom:4px;
     padding-bottom:0px;
@@ -115,14 +119,15 @@ class App extends React.Component {
     }
 
     onDragStart = (start) => {
-        const droppableId = start.source.droppableId.split('|')[1];
+        const arrIds = start.source.droppableId.split('|');
+        const droppableId = arrIds[1];
         const allowedColumns = this.state.allColumns.filter(col => droppableId === col.elemId)[0].allowedDragToColumns
-                .map(elem =>  start.type + '|' + this.state.elemIdLookUpTable[elem]);
+                .map(elem =>  arrIds[0] + '|' + this.state.elemIdLookUpTable[elem]);
         this.setState({validDroppables: allowedColumns});
     }
 
     onDragEnd = (result) => {
-        console.log(result);
+        //console.log(result);
         const {destination, source, draggableId } = result;
 
         // 1. Checking that an update is need
@@ -140,37 +145,12 @@ class App extends React.Component {
 
 
         //2. Fetching the column objects
-        let sourceColumn = null;
-        let destinationColumn = null;
-        let sourceColumnId = '';
-        let oneColumnMove = false;
-        let laneId = '';
-        if(source.droppableId.indexOf('_')>1){
-            //Start column is nested (=part of a group)
-            let arrSourceId = source.droppableId.split('_');
-            const sourceGroupId = arrSourceId[0];
-            arrSourceId = arrSourceId[1].split('|');
-            sourceColumnId = arrSourceId[1];
-            laneId = arrSourceId[0];
-            sourceColumn = this.state.columns[sourceGroupId].columns[sourceColumnId];
-        } else {
-            sourceColumn = this.state.columns[source.droppableId.split('|')[1]];
-            laneId = source.droppableId.split('|')[0];
-        }
-        if(source.droppableId === destination.droppableId){
-            destinationColumn = sourceColumn;
-            oneColumnMove = true;
-        } else {
-            if(destination.droppableId.indexOf('_')>1){
-                //Destination column is nested (=part of a group)
-                const arrDestId = destination.droppableId.split('_');
-                const destGroupId = arrDestId[0];
-                const destColumnId = arrDestId[1].split('|')[1];
-                destinationColumn = this.state.columns[destGroupId].columns[destColumnId];
-            } else {
-                destinationColumn = this.state.columns[destination.droppableId];
-            }
-        };
+        //      Format of element ids are: laneId|[GroupId_]ColumnId
+        const movedWithinColumn = (source.droppableId === destination.droppableId) ? true : false;
+        const laneId = source.droppableId.split('|')[0];
+        const sourceColumn = this.state.allColumns.filter(col => source.droppableId.split('|')[1] === col.elemId)[0];
+        const destinationColumn = (movedWithinColumn) ? sourceColumn : this.state.allColumns.filter(col => destination.droppableId.split('|')[1] === col.elemId)[0];
+
 
         //3. Not only the dragged task must be update.
         //   If the tasks is dragged from one column to another, then:
@@ -178,17 +158,16 @@ class App extends React.Component {
         //     In the destination column, indexes must be update where index > the new index of the dragged.
         //   If the task is dragged within the same column, then:
         //     Indexes must be set to index-1 where index > original index AND < new index.
-        //     Indexes must be set to index+1 where index > new index.
         // To do this, new arrays are created.
         let newData = [];
         let sourceColumnTasks = [];
         let destColumnTasks = [];
         let otherTasks = [];
         let movedTask = null;
-        let movedTaskIndex = 0;
+        
         const sourceIndex = source.index;
         const destIndex = destination.index;
-        if(oneColumnMove){
+        if(movedWithinColumn){
             sourceColumnTasks = this.state.tasks.filter(task => task.column === sourceColumn.taskColumn && task.lane === laneId)
                 .map((task) => {
                     if(destIndex > sourceIndex){
@@ -208,11 +187,9 @@ class App extends React.Component {
             //4. Fetching the task that has been moved and updating column and index values
             movedTask = sourceColumnTasks.filter(task => draggableId === task.id)[0];
             movedTask.indexInColumn = destination.index;
-            movedTaskIndex = sourceColumnTasks.indexOf(movedTask);
-            sourceColumnTasks[movedTaskIndex] = movedTask;
-
 
             newData = [...otherTasks, ...sourceColumnTasks];
+
         } else 
         { // drag between 2 columns
             sourceColumnTasks = this.state.tasks.filter(task => task.column === sourceColumn.taskColumn && task.lane === laneId)
@@ -222,7 +199,8 @@ class App extends React.Component {
                         task.isDirty = 1;
                     }
                     return task;
-                });
+                })
+                .sort((a,b) => a.indexInColumn - b.indexInColumn);
             destColumnTasks = this.state.tasks.filter(task => task.column === destinationColumn.taskColumn && task.lane === laneId)
                 .map((task) => {
                     if(task.indexInColumn >= destIndex){
@@ -230,18 +208,18 @@ class App extends React.Component {
                         task.isDirty = 1;
                     }
                     return task;
-                });
+                })
+                .sort((a,b) => a.indexInColumn - b.indexInColumn);
 
             otherTasks = this.state.tasks.filter(task => (task.column !== sourceColumn.taskColumn && task.column !== destinationColumn.taskColumn) || task.lane !== laneId);
 
-            //4. Fetching the task that has been moved and updating column and index values
+            //4. Fetching the task that has been moved and moving it from source to column lists
             movedTask = sourceColumnTasks.filter(task => draggableId === task.id)[0];
             movedTask.indexInColumn = destination.index;
             movedTask.column = destinationColumn.taskColumn;
-            //movedTask.lane = laneId;
-            movedTaskIndex = sourceColumnTasks.indexOf(movedTask);
-            sourceColumnTasks[movedTaskIndex] = movedTask;
-            //console.log(otherTasks);
+            sourceColumnTasks.splice(sourceIndex,1);
+            destColumnTasks.splice(destIndex,0,movedTask);
+
             newData = [...otherTasks, ...sourceColumnTasks, ...destColumnTasks];
         }
 
@@ -335,7 +313,6 @@ class App extends React.Component {
                                         column={column2} 
                                         tasks={tasks2} 
                                         group={false} 
-                                        type={lane.id}
                                         isDropDisabled={isDropDisabled}
                                         />; 
                             }
